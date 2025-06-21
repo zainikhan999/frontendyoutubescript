@@ -55,8 +55,8 @@ const LinkForm = () => {
         link.includes("youtube.com") || link.includes("youtu.be");
 
       const endpoint = isYouTube
-        ? "http://localhost:5000/api/transcript"
-        : "http://localhost:5000/api/web-analyze";
+        ? "https://zainikhan999.pythonanywhere.com/api/transcript"
+        : "https://zainikhan999.pythonanywhere.com/api/web-analyze";
 
       try {
         const res = await fetch(endpoint, {
@@ -81,7 +81,7 @@ const LinkForm = () => {
           combinedText += `\n\n[Full Content for ${link}]:\n${content}`;
         } else if (selectedOption === "summary" || selectedOption === "both") {
           const summaryRes = await fetch(
-            "http://localhost:5000/api/summarize",
+            "https://zainikhan999.pythonanywhere.com/api/summarize",
             {
               method: "POST",
               headers: {
@@ -119,13 +119,16 @@ const LinkForm = () => {
     if (!result.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/generate-script", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ transcript: result }),
-      });
+      const res = await fetch(
+        "https://zainikhan999.pythonanywhere.com/api/generate-script",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ transcript: result }),
+        }
+      );
 
       const data = await res.json();
       setScript(data.script || "Failed to generate script: " + data.error);
@@ -140,13 +143,16 @@ const LinkForm = () => {
     if (!result.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/generate-prompts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: result }),
-      });
+      const res = await fetch(
+        "https://zainikhan999.pythonanywhere.com/api/generate-prompts",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: result }),
+        }
+      );
 
       const data = await res.json();
       setPromptSuggestions(
