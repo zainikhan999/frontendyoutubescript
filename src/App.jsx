@@ -54,9 +54,12 @@ const LinkForm = () => {
       const isYouTube =
         link.includes("youtube.com") || link.includes("youtu.be");
 
+      // const endpoint = isYouTube
+      //   ? "http://localhost:5000/api/transcript"
+      //   : "http://localhost:5000/api/web-analyze";
       const endpoint = isYouTube
-        ? "https://zainikhan999.pythonanywhere.com/api/transcript"
-        : "https://zainikhan999.pythonanywhere.com/api/web-analyze";
+        ? "https://zainikhan999-web--8000.prod1.defang.dev/api/transcript"
+        : "https://zainikhan999-web--8000.prod1.defang.dev/api/web-analyze";
 
       try {
         const res = await fetch(endpoint, {
@@ -81,7 +84,7 @@ const LinkForm = () => {
           combinedText += `\n\n[Full Content for ${link}]:\n${content}`;
         } else if (selectedOption === "summary" || selectedOption === "both") {
           const summaryRes = await fetch(
-            "https://zainikhan999.pythonanywhere.com/api/summarize",
+            "https://zainikhan999-web--8000.prod1.defang.dev/api/summarize",
             {
               method: "POST",
               headers: {
@@ -120,7 +123,7 @@ const LinkForm = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        "https://zainikhan999.pythonanywhere.com/api/generate-script",
+        "https://zainikhan999-web--8000.prod1.defang.dev/api/generate-script",
         {
           method: "POST",
           headers: {
@@ -144,7 +147,7 @@ const LinkForm = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        "https://zainikhan999.pythonanywhere.com/api/generate-prompts",
+        "https://zainikhan999-web--8000.prod1.defang.dev/api/generate-prompts",
         {
           method: "POST",
           headers: {
@@ -155,9 +158,20 @@ const LinkForm = () => {
       );
 
       const data = await res.json();
-      setPromptSuggestions(
-        data.prompts || "Failed to generate prompts: " + data.error
-      );
+      if (Array.isArray(data.prompts)) {
+        // Convert array of prompts to markdown list
+        setPromptSuggestions(data.prompts.map((p) => `- ${p}`).join("\n"));
+      } else if (typeof data.prompts === "string") {
+        // Handle string version, turn each line into bullet if needed
+        const cleaned = data.prompts
+          .split("\n")
+          .filter((line) => line.trim() !== "")
+          .map((line) => `- ${line}`)
+          .join("\n");
+        setPromptSuggestions(cleaned);
+      } else {
+        setPromptSuggestions("Failed to generate prompts: " + data.error);
+      }
     } catch (error) {
       setPromptSuggestions("Network error or backend not running");
     }
@@ -385,6 +399,14 @@ const LinkForm = () => {
                   <h3>Prompt Suggestions:</h3>
                   <div
                     className="rendered-markdown"
+                    style={{
+                      lineHeight: "1.7",
+                      fontSize: "16px",
+                      color: "#333",
+                      paddingLeft: "10px",
+                      maxWidth: "600px", // ✨ Limit width
+                      wordBreak: "break-word", // ✨ Prevent overflow
+                    }}
                     dangerouslySetInnerHTML={{
                       __html: DOMPurify.sanitize(
                         marked.parse(
